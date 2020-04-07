@@ -1,0 +1,238 @@
+---
+title: "R Exercício ggplot"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+
+
+```{r}
+########################## Gráficos de Dispersão########################
+#install.packages('ggplot2')
+library(ggplot2)
+data(cars)
+dta<- cars
+ggplot(dta,aes(speed,dist))+
+  geom_point(shape=1)+
+  geom_smooth(method = lm)
+
+
+##################### Gráficos de Dispersãoiaça( lm com intervalo de con)###
+ggplot(dta,aes(speed,dist))+
+  geom_point(shape=1)+
+  geom_smooth(method = lm, se=FALSE) 
+
+```
+
+```{r}
+data(diamonds)
+
+dtad<-diamonds
+View(dtad)
+
+str(diamonds)
+ggplot(dtad,aes(x=carat,y=price))+
+  geom_point()
+
+ggplot(dtad,aes(x=carat,y=price))+
+  geom_point(shape=25,size=1)
+```
+
+```{r}
+################## Gráficos de Pontos pintados em função de factores###########
+ggplot(dtad,aes(x=carat, y=price, colour=cut))+
+  geom_point(size=1.5)
+
+```
+
+```{r}
+######################### Gráfico Histograma ##############################
+
+data("mpg")
+
+dtac<- mpg
+head(dtac)
+
+str(dtac)
+
+hist(dtac$hwy)
+
+ggplot(dtac,aes(x=hwy))+
+  geom_histogram(binwidth= 3)
+
+ggplot(dtac,aes(x=hwy))+
+  geom_histogram(bins = 30)
+
+ggplot(dtac,aes(x=hwy))+
+  geom_histogram(binwidth = .5,colour= 'black', fill='white')
+
+######################### Gráfico Densidade ##############################
+
+ggplot(dtac,aes(x=hwy))+
+  geom_density(fill='red')
+
+
+# histograma con curva de densidad
+ggplot(mpg, aes(x=hwy))+ 
+    geom_histogram(aes(y=..density..),      
+                   binwidth=2,
+                   colour="black", fill="blue") +
+    geom_density(alpha=.2, fill="red")#rellenado de la curva de densidad en rojo suave
+
+mpg_subset <- mpg[mpg$manufacturer=="audi" | mpg$manufacturer=="volkswagen",]
+str(mpg_subset)
+
+
+ggplot(mpg_subset, aes(x=hwy, fill=manufacturer))+
+  geom_histogram(binwidth=2, alpha=.5, position="identity")
+
+
+# histogramas intercalados
+ggplot(mpg_subset, aes(x=hwy, fill=manufacturer)) +
+    geom_histogram(binwidth=2, position="dodge")
+
+
+# curvas de densidad
+ggplot(mpg_subset, aes(x=hwy, fill=manufacturer))+ 
+  geom_density()
+
+# curvas de densidad con rellenado transparente
+ggplot(mpg_subset, aes(x=hwy, fill=manufacturer))+
+  geom_density(alpha=.3)
+
+#polinomios de frecuencias con colores en función de un factor
+
+#histogramas más sofisticados
+set.seed(6298)
+diamonds_small <- diamonds[sample(nrow(diamonds), 1000), ]
+ggplot(diamonds_small, aes(price, ..density.., colour = cut))+ 
+  geom_freqpoly(binwidth = 1000)
+
+#más opciones, histogramas solapados con distintos colores en función de un factor
+hist_cut <- ggplot(diamonds_small, aes(x = price, fill = cut))
+hist_cut + geom_histogram(binwidth = 1000)
+
+#gráficos de densidad con diferentes factores marcando colores
+ggplot(diamonds_small, aes(price, fill = cut))+
+  geom_density(alpha = 0.2)
+
+```
+
+
+```{r}
+################################# Gráfico de Barras#########################
+#install.packages("reshape2")
+library(reshape2)
+library(ggplot2)
+
+data(tipes)
+
+dtat<- tips
+
+head(dtat)
+
+str(dtat)
+
+ggplot(dtat,aes(x=time,y=total_bill))+
+  geom_bar(stat = 'identity') 
+
+
+# Por categoria smoker
+ggplot(dtat,aes(x=time,y=total_bill, fill=smoker))+
+  geom_bar(stat = 'identity') 
+
+############# Position_dodge ####################
+ggplot(dtat,aes(x=time,y=total_bill, fill=smoker))+
+  geom_bar(stat = 'identity',position=position_dodge()) 
+
+#Para obter um gráfico de barras de contagens, não mapeie uma variável para ye use stat="bin"(que é o padrão) em vez de stat="identity":
+#cuenta de clientes por día
+ggplot(dtat,aes(x=day))+
+  geom_bar(stat='count')
+
+#cuenta de media de  facturas por día
+ggplot(dtat,aes(x=day,y=total_bill))+
+  geom_bar(stat = 'summary',fun.y='mean')
+
+```
+
+
+```{r}
+ 
+###################### Gráficos de factor con barras de error ###############
+data(ToothGrowth)
+head(ToothGrowth)
+
+tg<-ToothGrowth
+
+#install.packages("Rmisc")
+library(Rmisc)
+
+tgc <- summarySE(tg, measurevar="len", groupvars=c("supp","dose"))
+tgc
+
+# factor plot con error bars
+ggplot(tgc, aes(x=dose, y=len, colour=supp)) + 
+  geom_errorbar(aes(ymin=len-se, ymax=len+se), width=.1) +
+  geom_line() +
+  geom_point()
+
+# observamos cómo quedaría esta gráfica según propinas por día 
+ggplot(tips, aes(x=day, y=tip, colour="red")) + 
+  geom_line() +
+  geom_point()
+```
+
+
+
+```{r}
+#################### Boxplot #########################
+p <- ggplot(diamonds, aes(cut, price))
+p + geom_boxplot()
+
+#propina en función de día
+#el domingo pagan más en media pero el sábado hay más gente optimista con propinas altas
+ggplot(tips, aes(day, tip))+  
+  geom_boxplot()+
+  coord_flip()
+
+```
+
+```{r}
+#################### Gráfico de Linha #######################
+
+data(ToothGrowth)
+head(ToothGrowth)
+
+datn<-ToothGrowth
+
+
+tgc1 <- summarySE(datn, measurevar="len", groupvars=c("supp","dose"))
+tgc1
+
+ggplot(data=tgc1, aes(x=dose, y=len, group=supp, colour=supp)) +
+  geom_line() +
+  geom_point()
+
+# Copy the data frame and convert dose to a factor
+datn2 <- datn
+datn2$dose <- factor(datn2$dose)
+ggplot(data=datn2, aes(x=dose, y=len, group=supp, colour=supp)) +
+  geom_line() +
+  geom_point()
+
+#Também é possível criar um gráfico de barras quando a variável é tratada como categórica e não numérica.
+
+ggplot(data=datn2, aes(x=dose, y=len, fill=supp)) +
+  geom_bar(stat="identity", position=position_dodge())
+
+ggplot(data=datn, aes(x=factor(dose), y=len, fill=supp)) +
+  geom_bar(stat="identity", position=position_dodge())
+```
+
+
+
+
+
